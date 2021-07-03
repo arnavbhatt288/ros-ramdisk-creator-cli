@@ -18,7 +18,13 @@ int main(int argc, char *argv[])
     FileHandle* fhandle;
     if (argc < 3)
     {
-        printf("oy vey");
+        #ifdef _WIN32
+            printf("Syntax: ./ramdisk-creator [x] [fs]\nWhere [x] is drive letter and [fs] is the type of filesystem.");
+        #else
+            printf("Syntax: ./ramdisk-creator /dev/sd[x] [fs]\nWhere [x] is the partition of the drive and [fs] is the type of filesystem.\n");
+        #endif
+
+        printf("Only FAT and FAT32 filesystem are supported.\n"); 
         return -1;
     }
 
@@ -42,7 +48,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
 
     if (!ReadVolumeSector(fhandle, 0, BootSectorBuffer))
     {
-        return FALSE;
+        return false;
     }
 
     if (strcasecmp(VolumeType, "fat32") == 0)
@@ -57,7 +63,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 0, fat32_data))
         {
-            return FALSE;
+            return false;
         }
 
         //
@@ -65,7 +71,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 14, (fat32_data+512)))
         {
-            return FALSE;
+            return false;
         }
     }
 
@@ -81,17 +87,17 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 0, fat_data))
         {
-            return FALSE;
+            return false;
         }
     }
 
     else
     {
         printf("File system type %s unknown.\n", VolumeType);
-        return FALSE;
+        return false;
     }
 
     printf("%s boot sector installed.\n", VolumeType);
 
-    return TRUE;
+    return true;
 }

@@ -22,7 +22,6 @@
 #pragma once
 
 #include <windows.h>
-#include "misc.h"
 
 typedef struct
 {
