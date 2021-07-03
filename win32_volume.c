@@ -53,11 +53,11 @@ void CloseVolume(FileHandle* fhandle)
     GlobalFree(fhandle);
 }
 
-BOOL ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
+bool ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
 {
     DWORD    dwNumberOfBytesRead;
     DWORD    dwFilePosition;
-    BOOL    bRetVal;
+    int    bRetVal;
 
     //
     // FIXME: this doesn't seem to handle the situation
@@ -85,11 +85,11 @@ BOOL ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffe
     return TRUE;
 }
 
-BOOL WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
+bool WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
 {
     DWORD    dwNumberOfBytesWritten;
     DWORD    dwFilePosition;
-    BOOL    bRetVal;
+    int    bRetVal;
 
     //
     // FIXME: this doesn't seem to handle the situation

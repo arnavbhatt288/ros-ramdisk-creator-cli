@@ -50,7 +50,7 @@ bool ReadVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer
     if (FilePosition != (SectorNumber * 512))
     {
         perror("ReadVolumeSector() failed!");
-        return false;
+        return FALSE;
     }
     
     NumberOfBytesRead = read(fhandle->file, SectorBuffer, 512);
@@ -58,13 +58,13 @@ bool ReadVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer
     if (NumberOfBytesRead != 512)
     {
         perror("ReadVolumeSector() failed!");
-        return false;
+        return FALSE;
     }
     
-    return true;
+    return TRUE;
 }
 
-bool WriteVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer)
+bool  WriteVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer)
 {
     int NumberOfBytesWritten;
     int FilePosition;
@@ -74,7 +74,7 @@ bool WriteVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffe
     if (FilePosition != (SectorNumber * 512))
     {
         perror("WriteVolumeSector() failed!");
-        return false;
+        return FALSE;
     }
     
     NumberOfBytesWritten = write(fhandle->file, SectorBuffer, 512);
@@ -82,8 +82,8 @@ bool WriteVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffe
     if (NumberOfBytesWritten != 512)
     {
         perror("WriteVolumeSector() failed!");
-        return false;
+        return FALSE;
     }
     
-    return true;
+    return TRUE;
 }

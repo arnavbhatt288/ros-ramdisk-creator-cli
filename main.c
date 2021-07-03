@@ -6,7 +6,6 @@
  */
  
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "fs_data.h"
@@ -43,7 +42,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
 
     if (!ReadVolumeSector(fhandle, 0, BootSectorBuffer))
     {
-        return false;
+        return FALSE;
     }
 
     if (strcasecmp(VolumeType, "fat32") == 0)
@@ -58,7 +57,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 0, fat32_data))
         {
-            return false;
+            return FALSE;
         }
 
         //
@@ -66,7 +65,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 14, (fat32_data+512)))
         {
-            return false;
+            return FALSE;
         }
     }
 
@@ -82,17 +81,17 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
         //
         if (!WriteVolumeSector(fhandle, 0, fat_data))
         {
-            return false;
+            return FALSE;
         }
     }
 
     else
     {
         printf("File system type %s unknown.\n", VolumeType);
-        return false;
+        return FALSE;
     }
 
     printf("%s boot sector installed.\n", VolumeType);
 
-    return true;
+    return TRUE;
 }

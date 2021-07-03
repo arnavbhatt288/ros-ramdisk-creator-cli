@@ -22,6 +22,7 @@
 #pragma once
 
 #include <windows.h>
+#include "misc.h"
 
 typedef struct
 {
@@ -30,5 +31,5 @@ typedef struct
 
 FileHandle*    OpenVolume(LPCTSTR lpszVolumeName);
 void           CloseVolume(FileHandle* fhandle);
-BOOL           ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
-BOOL           WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+bool           ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+bool           WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
