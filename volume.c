@@ -1,83 +1,89 @@
 /*
  * PROJECT:     ReactOS RAMDisk Creator
  * LICENSE:     GPL-2.0-or-later (https://spdx.org/licenses/GPL-2.0-or-later)
- * PURPOSE:     Precompiler
+ * PURPOSE:     volume.c
  * COPYRIGHT:   Copyright 2021 Arnav Bhatt (arnavbhatt288@gmail.com)
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
 
-#include "precomp.h"
+#include "volume.h"
 
-static int hDiskVolume = 0;
-
-bool OpenVolume(char* lpszVolumeName)
+FileHandle* OpenVolume(char* VolumeName)
 {
-	char RealVolumeName[512];
-	
-	strcpy(RealVolumeName, lpszVolumeName);
-	
-	printf("Opening volume %s\n", lpszVolumeName);
-	
-	hDiskVolume = open(lpszVolumeName, O_RDWR | O_SYNC);
-	
-	if (hDiskVolume < 0)
-	{
-		perror("OpenVolume() failed!");
-		return false;
-	}
-	
-	return true;
+    FileHandle* fhandle = malloc(sizeof(*fhandle));
+    printf("Opening volume %s\n", VolumeName);
+    
+    fhandle->file = open(VolumeName, O_RDWR | O_SYNC);
+    
+    if (fhandle->file < 0)
+    {
+        perror("OpenVolume() failed!");
+        return NULL;
+    }
+    
+    return fhandle;
 }
 
-void CloseVolume(void)
+void CloseVolume(FileHandle* fhandle)
 {
-    close(hDiskVolume);
+    close(fhandle->file);
+    fhandle->file = -1;
+    free(fhandle);
 }
 
-bool ReadVolumeSector(long SectorNumber, void* SectorBuffer)
+bool ReadVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer)
 {
-	int dwNumberOfBytesRead;
-	int dwFilePosition;
-	
-	dwFilePosition = lseek(hDiskVolume, (SectorNumber* 512), SEEK_SET);
-	
-	if (dwFilePosition != (SectorNumber * 512))
-	{
-		perror("ReadVolumeSector() failed!");
-		return false;
-	}
-	
-	dwNumberOfBytesRead = read(hDiskVolume, SectorBuffer, 512);
-	
-	if (dwNumberOfBytesRead != 512)
-	{
-		perror("ReadVolumeSector() failed!");
-		return false;
-	}
-	
-	return true;
+    int NumberOfBytesRead;
+    int FilePosition;
+    
+    FilePosition = lseek(fhandle->file, (SectorNumber* 512), SEEK_SET);
+    
+    if (FilePosition != (SectorNumber * 512))
+    {
+        perror("ReadVolumeSector() failed!");
+        return false;
+    }
+    
+    NumberOfBytesRead = read(fhandle->file, SectorBuffer, 512);
+    
+    if (NumberOfBytesRead != 512)
+    {
+        perror("ReadVolumeSector() failed!");
+        return false;
+    }
+    
+    return true;
 }
 
-bool WriteVolumeSector(long SectorNumber, void* SectorBuffer)
+bool WriteVolumeSector(FileHandle* fhandle, long SectorNumber, void* SectorBuffer)
 {
-	int dwNumberOfBytesWritten;
-	int dwFilePosition;
-	
-	dwFilePosition = lseek(hDiskVolume, (SectorNumber * 512), SEEK_SET);
-	
-	if (dwFilePosition != (SectorNumber * 512))
-	{
-		perror("WriteVolumeSector() failed!");
-		return false;
-	}
-	
-	dwNumberOfBytesWritten = write(hDiskVolume, SectorBuffer, 512);
-	
-	if (dwNumberOfBytesWritten != 512)
-	{
-		perror("WriteVolumeSector() failed!");
-		return false;
-	}
-	
-	return true;
+    int NumberOfBytesWritten;
+    int FilePosition;
+    
+    FilePosition = lseek(fhandle->file, (SectorNumber * 512), SEEK_SET);
+    
+    if (FilePosition != (SectorNumber * 512))
+    {
+        perror("WriteVolumeSector() failed!");
+        return false;
+    }
+    
+    NumberOfBytesWritten = write(fhandle->file, SectorBuffer, 512);
+    
+    if (NumberOfBytesWritten != 512)
+    {
+        perror("WriteVolumeSector() failed!");
+        return false;
+    }
+    
+    return true;
 }

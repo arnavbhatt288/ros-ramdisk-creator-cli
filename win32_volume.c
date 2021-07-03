@@ -2,6 +2,7 @@
  *  FreeLoader - volume.c
  *
  *  Copyright (C) 2001  Brian Palmer  <brianp@sginet.com>
+ *  Copyright (C) 2021  Arnav Bhatt   <arnavbhatt288@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,59 +19,41 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "volume.h"
+#include "win32_volume.h"
 
-static HANDLE    hDiskVolume = NULL;
-
-BOOL OpenVolume(LPCTSTR lpszVolumeName)
+FileHandle* OpenVolume(LPCTSTR lpszVolumeName)
 {
-    TCHAR    RealVolumeName[MAX_PATH];
-
-    //
-    // If they passed in a drive letter (e.g. "A:")
-    // then try to open the physical device volume,
-    // otherwise we will assume it is a disk image
-    // file they are writing to. (not fully supported yet)
-    //
-    if ((_tcslen(lpszVolumeName) == 2) && (lpszVolumeName[1] == _T(':')))
-    {
-        _tcscpy(RealVolumeName, _T("\\\\.\\"));
-        _tcscat(RealVolumeName, lpszVolumeName);
-    }
-    else
-    {
-        _tcscpy(RealVolumeName, lpszVolumeName);
-    }
+    FileHandle* fhandle = GlobalAlloc(GPTR, sizeof(*fhandle));
 
     _tprintf(_T("Opening volume \'%s\'\n"), lpszVolumeName);
 
-    hDiskVolume = CreateFile(RealVolumeName,
-                            GENERIC_READ | GENERIC_WRITE,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE,
-                            NULL,
-                            OPEN_EXISTING,
-                            0,
-                            NULL);
+    fhandle->file = CreateFile(lpszVolumeName,
+                               GENERIC_READ | GENERIC_WRITE,
+                               FILE_SHARE_READ | FILE_SHARE_WRITE,
+                               NULL,
+                               OPEN_EXISTING,
+                               0,
+                               NULL);
 
-    if (hDiskVolume == INVALID_HANDLE_VALUE)
+    if (fhandle->file == INVALID_HANDLE_VALUE)
     {
         _tprintf(_T("%s:%d: "), __FILE__, __LINE__);
         _tprintf(_T("Failed. Error code %ld.\n"), GetLastError());
-        return FALSE;
+        return NULL;
     }
 
-    return TRUE;
+    return fhandle;
 }
 
-void CloseVolume(void)
+void CloseVolume(FileHandle* fhandle)
 {
-    CloseHandle(hDiskVolume);
+    CloseHandle(fhandle->file);
+    GlobalFree(fhandle);
 }
 
-BOOL ReadVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
+BOOL ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
 {
     DWORD    dwNumberOfBytesRead;
     DWORD    dwFilePosition;
@@ -83,7 +66,7 @@ BOOL ReadVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
     // the call to SetFilePointer() should just give an
     // out of bounds error or something but it doesn't.
     //
-    dwFilePosition = SetFilePointer(hDiskVolume, (SectorNumber * 512), NULL, FILE_BEGIN);
+    dwFilePosition = SetFilePointer(fhandle->file, (SectorNumber * 512), NULL, FILE_BEGIN);
     if (dwFilePosition != (SectorNumber * 512))
     {
         _tprintf(_T("%s:%d: "), __FILE__, __LINE__);
@@ -91,7 +74,7 @@ BOOL ReadVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
         return FALSE;
     }
 
-    bRetVal = ReadFile(hDiskVolume, SectorBuffer, 512, &dwNumberOfBytesRead, NULL);
+    bRetVal = ReadFile(fhandle->file, SectorBuffer, 512, &dwNumberOfBytesRead, NULL);
     if (!bRetVal || (dwNumberOfBytesRead != 512))
     {
         _tprintf(_T("%s:%d: "), __FILE__, __LINE__);
@@ -102,7 +85,7 @@ BOOL ReadVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
     return TRUE;
 }
 
-BOOL WriteVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
+BOOL WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer)
 {
     DWORD    dwNumberOfBytesWritten;
     DWORD    dwFilePosition;
@@ -115,7 +98,7 @@ BOOL WriteVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
     // the call to SetFilePointer() should just give an
     // out of bounds error or something but it doesn't.
     //
-    dwFilePosition = SetFilePointer(hDiskVolume, (SectorNumber * 512), NULL, FILE_BEGIN);
+    dwFilePosition = SetFilePointer(fhandle->file, (SectorNumber * 512), NULL, FILE_BEGIN);
     if (dwFilePosition != (SectorNumber * 512))
     {
         _tprintf(_T("%s:%d: "), __FILE__, __LINE__);
@@ -123,7 +106,7 @@ BOOL WriteVolumeSector(ULONG SectorNumber, PVOID SectorBuffer)
         return FALSE;
     }
 
-    bRetVal = WriteFile(hDiskVolume, SectorBuffer, 512, &dwNumberOfBytesWritten, NULL);
+    bRetVal = WriteFile(fhandle->file, SectorBuffer, 512, &dwNumberOfBytesWritten, NULL);
     if (!bRetVal || (dwNumberOfBytesWritten != 512))
     {
         _tprintf(_T("%s:%d: "), __FILE__, __LINE__);

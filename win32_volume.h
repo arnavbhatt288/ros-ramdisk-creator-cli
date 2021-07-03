@@ -2,6 +2,7 @@
  *  FreeLoader - volume.h
  *
  *  Copyright (C) 2001  Brian Palmer  <brianp@sginet.com>
+ *  Copyright (C) 2021  Arnav Bhatt   <arnavbhatt288@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +21,14 @@
 
 #pragma once
 
-BOOL    OpenVolume(LPCTSTR lpszVolumeName);
-void    CloseVolume(void);
-BOOL    ReadVolumeSector(ULONG SectorNumber, PVOID SectorBuffer);
-BOOL    WriteVolumeSector(ULONG SectorNumber, PVOID SectorBuffer);
+#include <windows.h>
+
+typedef struct
+{
+    HANDLE file;
+} FileHandle;
+
+FileHandle*    OpenVolume(LPCTSTR lpszVolumeName);
+void           CloseVolume(FileHandle* fhandle);
+BOOL           ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+BOOL           WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
