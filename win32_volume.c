@@ -21,7 +21,6 @@
 
 #include <stdio.h>
 #include <tchar.h>
-#include <misc.h>
 #include "win32_volume.h"
 
 FileHandle* OpenVolume(LPCTSTR lpszVolumeName)

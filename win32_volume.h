@@ -19,7 +19,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#ifndef WIN32_VOLUME_H
+#define WIN32_VOLUME_H
 
 #include <windows.h>
 
@@ -30,5 +31,7 @@ typedef struct
 
 FileHandle*    OpenVolume(LPCTSTR lpszVolumeName);
 void           CloseVolume(FileHandle* fhandle);
-bool           ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
-bool           WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+BOOL           ReadVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+BOOL           WriteVolumeSector(FileHandle* fhandle, ULONG SectorNumber, PVOID SectorBuffer);
+
+#endif

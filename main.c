@@ -19,7 +19,7 @@ char *argv0;
 bool InstallBootSector(FileHandle* fhandle, char* VolumeType);
 static void ProgramUsage(void);
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     bool GenerateINI = false;
     bool Ret = false;
