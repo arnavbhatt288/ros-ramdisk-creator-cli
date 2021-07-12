@@ -4,15 +4,23 @@
  * PURPOSE:     main.c file
  * COPYRIGHT:   Copyright 2021 Arnav Bhatt (arnavbhatt288@gmail.com)
  */
- 
+
+#define countof(array) (sizeof(array) / sizeof(array[0]))
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "arg.h"
-#include "ini.h"
 #include "fs_data.h"
-#include "volume.h"
+#include "ini.h"
+#include "ini_data.h"
+
+#ifdef _WIN32
+	#include "win32_volume.h"
+#else
+	#include "volume.h"
+#endif
 
 char *argv0;
 
@@ -21,20 +29,14 @@ static void ProgramUsage(void);
 
 int main(int argc, char *argv[])
 {
-    bool GenerateINI = false;
     bool Ret = false;
-    bool bootcd = "";
-    char* dest = "";
+    bool bootcd = false;
+    bool livecd = false;
+    char* drive = "";
+    char* IniDest = "";
     char* fs_type = "";
-    bool livecd = "";
 
     FileHandle* fhandle;
-
-    if (argc == 1)
-    {
-        ProgramUsage();
-        return -1;
-    }
 
     ARGBEGIN
     {
@@ -46,7 +48,7 @@ int main(int argc, char *argv[])
         
         case 'd':
         {
-            dest = EARGF(ProgramUsage());
+            drive = EARGF(ProgramUsage());
             break;
         }
         
@@ -58,7 +60,7 @@ int main(int argc, char *argv[])
         
         case 'i':
         {
-            GenerateINI = true;
+            IniDest = EARGF(ProgramUsage());
             break;
         }
         
@@ -75,9 +77,15 @@ int main(int argc, char *argv[])
         }
     } ARGEND
 
-    if (strcmp(dest, "") != 0 && strcmp(fs_type, "") != 0)
+	if (argc == 1)
     {
-        fhandle = OpenVolume(dest);
+        ProgramUsage();
+        return -1;
+    }
+
+    if (strcmp(drive, "") != 0 && strcmp(fs_type, "") != 0)
+    {
+        fhandle = OpenVolume(drive);
         if (fhandle == NULL)
         {
             return -1;
@@ -90,60 +98,39 @@ int main(int argc, char *argv[])
         }
         CloseVolume(fhandle);
     }
-    else if(GenerateINI && (strcmp(dest, "") != 0))
+    else if((strcmp(IniDest, "") != 0))
     {
-        Ret = CreateINI(dest, "FREELOADER", "DefaultOS", "Setup");
-        Ret = CreateINI(dest, "FREELOADER", "TimeOut", "5");
-        Ret = CreateINI(dest, "Display", "TitleText", "ReactOS Setup (RAM Disk)");
-        Ret = CreateINI(dest, "Display", "StatusBarColor", "Cyan");
-        Ret = CreateINI(dest, "Display", "StatusBarTextColor", "Black");
-        Ret = CreateINI(dest, "Display", "BackdropTextColor", "White");
-        Ret = CreateINI(dest, "Display", "BackdropColor", "Blue");
-        Ret = CreateINI(dest, "Display", "BackdropFillStyle", "Medium");
-        Ret = CreateINI(dest, "Display", "TitleBoxTextColor", "White");
-        Ret = CreateINI(dest, "Display", "TitleBoxColor", "Red");
-        Ret = CreateINI(dest, "Display", "MessageBoxTextColor", "White");
-        Ret = CreateINI(dest, "Display", "MessageBoxColor", "Blue");
-        Ret = CreateINI(dest, "Display", "MenuTextColor", "Gray");
-        Ret = CreateINI(dest, "Display", "MenuColor", "Black");
-        Ret = CreateINI(dest, "Display", "TextColor", "Gray");
-        Ret = CreateINI(dest, "Display", "SelectedTextColor", "Black");
-        Ret = CreateINI(dest, "Display", "SelectedColor", "Gray");
-        Ret = CreateINI(dest, "Display", "ShowTime", "No");
-        Ret = CreateINI(dest, "Display", "MenuBox", "No");
-        Ret = CreateINI(dest, "Display", "CenterMenu", "No");
-        Ret = CreateINI(dest, "Display", "MinimalUI", "Yes");
-        Ret = CreateINI(dest, "Display", "TimeText", "Seconds until highlighted choice will be started automatically:");
+        for (int i = 0; i < countof(MainIniData); i++)
+        {
+            Ret = CreateINI(IniDest, MainIniData[i].pacTopic, MainIniData[i].pacItem, MainIniData[i].pacValue);
+            if (!Ret)
+            {
+                return -1;
+            }
+        }
 
         if (bootcd)
         {
-            Ret = CreateINI(dest, "Operating Systems", "Setup", "\"Setup\"");
-            Ret = CreateINI(dest, "Setup", "BootType", "ReactOSSetup");
-            Ret = CreateINI(dest, "Setup", "SystemPath", "ramdisk(0)");
-            Ret = CreateINI(dest, "Setup", "Options", "/RDPATH=bootcd.iso");
+            for (int i = 0; i < countof(BootCDIniData); i++)
+            {
+            Ret = CreateINI(IniDest, BootCDIniData[i].pacTopic, BootCDIniData[i].pacItem, BootCDIniData[i].pacValue);
+                if (!Ret)
+                {
+                    return -1;
+                }
+            }
         }
 
         if (livecd)
         {
-            Ret = CreateINI(dest, "Operating Systems", "LiveCD", "\"LiveCD\"");
-            Ret = CreateINI(dest, "LiveCD", "BootType", "Windows2003");
-            Ret = CreateINI(dest, "LiveCD", "SystemPath", "ramdisk(0)\\reactos");
-            Ret = CreateINI(dest, "LiveCD", "Options", "/MININT /RDPATH=livecd.iso /RDEXPORTASCD");
-            // BootCD already has debug by default, therefore end-user will also have option to turn it on for LiveCD.
-            Ret = CreateINI(dest, "Operating Systems", "LiveCD_Debug", "\"LiveCD (Debug)\"");
-            Ret = CreateINI(dest, "LiveCD_Debug", "BootType", "Windows2003");
-            Ret = CreateINI(dest, "LiveCD_Debug", "SystemPath", "ramdisk(0)\\reactos");
-            Ret = CreateINI(dest, "LiveCD_Debug", "Options", "/MININT /RDPATH=livecd.iso /RDEXPORTASCD /DEBUG /DEBUGPORT=COM1 /BAUDRATE=115200 /SOS");
-            // ...and screen for those unfortunate without a Serial connector or cable.
-            Ret = CreateINI(dest, "Operating Systems", "LiveCD_Screen", "\"LiveCD (Screen)\"");
-            Ret = CreateINI(dest, "LiveCD_Screen", "BootType", "Windows2003");
-            Ret = CreateINI(dest, "LiveCD_Screen", "SystemPath", "ramdisk(0)\\reactos");
-            Ret = CreateINI(dest, "LiveCD_Screen", "Options", "/MININT /RDPATH=livecd.iso /RDEXPORTASCD /DEBUG /DEBUGPORT=SCREEN /SOS");
-        }
-
-        if (!Ret)
-        {
-            return -1;
+            for (int i = 0; i < countof(BootCDIniData); i++)
+            {
+                Ret = CreateINI(IniDest, LiveCDIniData[i].pacTopic, LiveCDIniData[i].pacItem, LiveCDIniData[i].pacValue);
+                if (!Ret)
+                {
+                    return -1;
+                }
+            }
         }
 
         printf("INI sucessfully created.\n");
