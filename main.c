@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 
         if (livecd)
         {
-            for (int i = 0; i < countof(BootCDIniData); i++)
+            for (int i = 0; i < countof(LiveCDIniData); i++)
             {
                 Ret = CreateINI(IniDest, LiveCDIniData[i].pacTopic, LiveCDIniData[i].pacItem, LiveCDIniData[i].pacValue);
                 if (!Ret)
