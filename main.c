@@ -77,12 +77,6 @@ int main(int argc, char *argv[])
         }
     } ARGEND
 
-	if (argc == 1)
-    {
-        ProgramUsage();
-        return -1;
-    }
-
     if (strcmp(drive, "") != 0 && strcmp(fs_type, "") != 0)
     {
         fhandle = OpenVolume(drive);
@@ -207,7 +201,7 @@ bool InstallBootSector(FileHandle* fhandle, char* VolumeType)
 static void ProgramUsage(void)
 {
     const char *opts1 = "[-d drive] [-f fs]";
-    const char *opts2 = "[-i] [-d freeldr.ini] [-b] [-l]";
+    const char *opts2 = "[-i] path-to-freeldr.ini [-b] [-l]";
 
     printf("usage: %s %s for installing bootloader\n", argv0, opts1);
     printf("usage: %s %s for generating freeldr.ini.\n", argv0, opts2);
