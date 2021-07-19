@@ -9,6 +9,8 @@ Use provided makefile to compile the program. There is a precompiled version for
 
 ## Usage:
 ### For installing bootsector:
+Before using this tool, your drive's partition table must be set on "loop". Otherwise it may fail.
+
 Linux: `./ramdisk-creator -d /dev/sd[x] -f [fs]`
 Windows `ramdisk-creator.exe -d [drive_letter] -f [fs]`
 
