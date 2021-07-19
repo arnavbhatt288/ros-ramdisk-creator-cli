@@ -5,11 +5,12 @@
  * COPYRIGHT:   Copyright 2021 Arnav Bhatt (arnavbhatt2004@gmail.com)
  */
 
-#include "ini.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "bool.h"
+#include "ini.h"
 
 bool CreateINI(char *pacPath, char *pacTopic, char *pacItem, char *pacValue)
 {

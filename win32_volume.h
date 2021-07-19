@@ -22,8 +22,6 @@
 #ifndef WIN32_VOLUME_H
 #define WIN32_VOLUME_H
 
-#include <windows.h>
-
 typedef struct
 {
     HANDLE file;

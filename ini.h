@@ -8,8 +8,6 @@
 #ifndef INI_H
 #define INI_H
 
-#include "bool.h"
-
 bool CreateINI(char *pacPath, char *pacTopic, char *pacItem, char *pacValue);
 
 #endif

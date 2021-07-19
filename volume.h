@@ -8,8 +8,6 @@
 #ifndef VOLUME_H
 #define VOLUME_H
 
-#include "bool.h"
-
 typedef struct
 {
     int file;

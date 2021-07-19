@@ -12,11 +12,13 @@
 #include <string.h>
 
 #include "arg.h"
+#include "bool.h"
 #include "fs_data.h"
 #include "ini.h"
 #include "ini_data.h"
 
 #ifdef _WIN32
+    #include <windows.h>
 	#include "win32_volume.h"
 #else
 	#include "volume.h"

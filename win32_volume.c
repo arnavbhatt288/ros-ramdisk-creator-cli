@@ -19,17 +19,23 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
+
 #include "win32_volume.h"
 
 FileHandle* OpenVolume(LPCTSTR lpszVolumeName)
 {
+    TCHAR RealVolumeName[MAX_PATH];
     FileHandle* fhandle = GlobalAlloc(GPTR, sizeof(*fhandle));
+
+    _tcscpy(RealVolumeName, _T("\\\\.\\"));
+    _tcscat(RealVolumeName, lpszVolumeName);
 
     _tprintf(_T("Opening volume \'%s\'\n"), lpszVolumeName);
 
-    fhandle->file = CreateFile(lpszVolumeName,
+    fhandle->file = CreateFile(RealVolumeName,
                                GENERIC_READ | GENERIC_WRITE,
                                FILE_SHARE_READ | FILE_SHARE_WRITE,
                                NULL,

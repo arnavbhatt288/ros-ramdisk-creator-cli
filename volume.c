@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -15,6 +14,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "bool.h"
 #include "volume.h"
 
 FileHandle* OpenVolume(char* VolumeName)
